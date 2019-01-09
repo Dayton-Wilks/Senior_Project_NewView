@@ -2,18 +2,55 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>NewView</title>
+
+    <!-- NewView CSS-->
+    <link rel="stylesheet" href="assets/CSS/NewView.css" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
+ 
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    We are using Node.js <script>document.write(process.versions.node)</script>,
-    Chromium <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+
+    <nav class="navbar navbar-expand-md mb-4">
+      <a class="navbar-brand">link</a>
+      <button class="navbar-toggler" type="button">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <div class="container">
+      <div class="card">
+        <form>
+          <div class="form-group">
+            <label for="newInputBox">Input</label>
+            <input type="text" class="form-control" id="newInputBox" placeholder="Add File">
+          </div>
+          <div class="form-group">
+            <label for="newOperationBox">Convert To</label>
+            <select multiple class="form-control" id="newOperationBox">
+              <option>Option 1</options>
+              <option>Option 2</options>
+              <option>Option 3</options>
+              <option>Option 4</options>
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script>
       // You can also require other files to run in this process
       require('./renderer.js')
+      if(typeof($.fn.popover) != 'undefined'){
+        console.log("Bootstrap")
+      }
     </script>
   </body>
 </html>
