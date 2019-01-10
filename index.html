@@ -27,11 +27,14 @@
 
     <div class="container">
       <div class="card">
-        <form>
-          <div class="form-group">
-            <label for="newInputBox">Input</label>
-            <input type="text" class="form-control" id="newInputBox" placeholder="Add File">
+        <form class="card-body">
+            
+          <label for="newInputBox">Input</label>
+          <div class="input-group">
+              <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
+              <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
           </div>
+
           <div class="form-group">
             <label for="newOperationBox">Convert To</label>
             <select multiple class="form-control" id="newOperationBox">
@@ -41,16 +44,22 @@
               <option>Option 4</options>
             </select>
           </div>
+
+          <label for="newOutputBox">Output</label>
+          <div class="input-group">
+              <button type="button" class="btn btn-primary" onclick="SaveLocalFile('newOutputBox')">Find File</button>
+              <input type="text" class="form-control" id="newOutputBox" placeholder="Browse" title="File" readonly>
+          </div>
+
         </form>
       </div>
     </div>
 
     <script>
       // You can also require other files to run in this process
-      require('./renderer.js')
-      if(typeof($.fn.popover) != 'undefined'){
-        console.log("Bootstrap")
-      }
+      //require('renderer.js')
     </script>
+
+    <script src="assets/js/NewView.js"></script>
   </body>
 </html>

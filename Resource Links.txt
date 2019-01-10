@@ -1,0 +1,17 @@
+<!-- Electron Example Projects -->
+https://github.com/hokein/electron-sample-apps/tree/master
+
+<!-- Javascript W3 School -->
+https://www.w3schools.com/js/js_whereto.asp
+
+<!-- File Input HTML/Bootstrap -->
+https://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3
+
+<!-- jimp Article -->
+https://medium.com/@rossbulat/image-processing-in-nodejs-with-jimp-174f39336153
+
+<!-- Popular Video File Formats Article -->
+https://www.borrowlenses.com/blog/video-file-formats/
+
+<!-- Video Container Wikipedia -->
+https://en.wikipedia.org/wiki/Comparison_of_video_container_formats
