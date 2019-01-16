@@ -25,3 +25,18 @@ https://github.com/fluent-ffmpeg/node-fluent-ffmpeg#fluent-ffmpeg-api-for-nodejs
 
 <!-- NPM - ffmpeg Progress Wrapper -->
 https://www.npmjs.com/package/ffmpeg-progress-wrapper
+
+<!-- Google Drive API Example -->
+https://developers.google.com/drive/api/v3/quickstart/nodejs
+
+<!-- Google Drive File Picker Example -->
+https://developers.google.com/drive/api/v3/picker
+
+<!-- NPM - Google API's -->
+https://www.npmjs.com/package/googleapis
+
+<!-- Google Drive File Picker Example Alt -->
+https://gist.github.com/Daniel15/5994054
+
+<!-- Google Drive API Page -->
+https://console.developers.google.com/apis/library/drive.googleapis.com?angularJsUrl=%2Fprojectselector%2Fapis%2Flibrary%2Fdrive.googleapis.com&creatingProject&project=newview

@@ -2,3 +2,4 @@
 renderer.js
 vendors.js
 release-builds
+/TestFiles/*
