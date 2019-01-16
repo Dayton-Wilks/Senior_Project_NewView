@@ -9,6 +9,7 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 1200, height: 600 })
   mainWindow.webContents.session.clearCache(function(){}) 
+  mainWindow.setMenu(null);
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')

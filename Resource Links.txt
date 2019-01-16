@@ -15,3 +15,13 @@ https://www.borrowlenses.com/blog/video-file-formats/
 
 <!-- Video Container Wikipedia -->
 https://en.wikipedia.org/wiki/Comparison_of_video_container_formats
+
+<!-- StackOverflow - Catching ffmpeg Progress Output -->
+https://stackoverflow.com/questions/7632589/getting-realtime-output-from-ffmpeg-to-be-used-in-progress-bar-pyqt4-stdout
+
+<!-- NPM/GIT - Fluent ffmpeg API -->
+https://www.npmjs.com/package/fluent-ffmpeg
+https://github.com/fluent-ffmpeg/node-fluent-ffmpeg#fluent-ffmpeg-api-for-nodejs-
+
+<!-- NPM - ffmpeg Progress Wrapper -->
+https://www.npmjs.com/package/ffmpeg-progress-wrapper

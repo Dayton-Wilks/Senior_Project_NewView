@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+
     <meta charset="UTF-8">
     <title>NewView</title>
 
@@ -15,45 +16,109 @@
     <script>let $ = require('jquery');</script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>
+
   </head>
   <body>
 
-    <nav class="navbar navbar-expand-md mb-4">
+    <!-- <nav class="navbar navbar-expand-md mb-4">
       <a class="navbar-brand">link</a>
       <button class="navbar-toggler" type="button">
         <span class="navbar-toggler-icon"></span>
       </button>
-    </nav>
+    </nav> -->
 
-    <div class="container">
-      <div class="card">
-        <form class="card-body">
-            
-          <label for="newInputBox">Input</label>
-          <div class="input-group">
-              <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
-              <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
-          </div>
-
-          <div class="form-group">
-            <label for="newOperationBox">Convert To</label>
-            <select multiple class="form-control" id="newOperationBox">
-              <option>Option 1</options>
-              <option>Option 2</options>
-              <option>Option 3</options>
-              <option>Option 4</options>
-            </select>
-          </div>
-
-          <label for="newOutputBox">Output</label>
-          <div class="input-group">
-              <button type="button" class="btn btn-primary" onclick="SaveLocalFile('newOutputBox')">Find File</button>
-              <input type="text" class="form-control" id="newOutputBox" placeholder="Browse" title="File" readonly>
-          </div>
-
-        </form>
-      </div>
+    <div class="container" id="formContainer">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="video-tab" data-toggle="tab" href="#videoForm" role="tab" aria-controls="videoForm" aria-selected="true">Video</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="audio-tab" data-toggle="tab" href="#audioForm" role="tab" aria-controls="audioForm" aria-selected="false">Audio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="image-tab" data-toggle="tab" href="#imageForm" role="tab" aria-controls="imageForm" aria-selected="false">Image</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="rip-tab" data-toggle="tab" href="#ripForm" role="tab" aria-controls="ripForm" aria-selected="false">Rip</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="videoForm" role="tabpanel" aria-labelledby="home-tab">
+            <form class="card-body">
+              <h3>Video</h3>
+              <div class="input-group">
+                  <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
+                  <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
+              </div>
+              <div class="form-group">
+                <label for="newOperationBox">Convert To</label>
+                <select class="form-control" id="newOperationBox">
+                  <option>avi</options>
+                  <option>mp4</options>
+                  <option>Option 3</options>
+                  <option>Option 4</options>
+                </select>
+              </div>
+              <label for="newOutputBox">Output</label>
+              <div class="input-group">
+                  <button type="button" class="btn btn-primary" onclick="SaveLocalFile('newOutputBox')">Find File</button>
+                  <input type="text" class="form-control" id="newOutputBox" placeholder="Browse" title="File" readonly>
+              </div>
+              <button type="button" class="button btn-primary" onclick="ConvertVideoButton()">Start</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="audioForm" role="tabpanel" aria-labelledby="audio-tab">2</div>
+        <div class="tab-pane fade" id="imageForm" role="tabpanel" aria-labelledby="image-tab">3</div>
+        <div class="tab-pane fade" id="ripForm" role="tabpanel" aria-labelledby="rip-tab">4</div>
+      </div>      
     </div>
+
+    <!-- <div class="container">
+      <div class="tab-content">
+
+          <div id="videoTab" class="tab-pane fade-in active">
+            <h3>Video</h3>
+            <div class="card">
+              <form class="card-body">
+                <h3>Video</h3>
+                <div class="input-group">
+                    <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
+                    <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="newOperationBox">Convert To</label>
+                  <select class="form-control" id="newOperationBox">
+                    <option>Option 1</options>
+                    <option>Option 2</options>
+                    <option>Option 3</options>
+                    <option>Option 4</options>
+                  </select>
+                </div>
+                <label for="newOutputBox">Output</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-primary" onclick="SaveLocalFile('newOutputBox')">Find File</button>
+                    <input type="text" class="form-control" id="newOutputBox" placeholder="Browse" title="File" readonly>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div id="audioTab" class="tab-pane fade">
+            <h3>Audio</h3>
+            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          </div>
+
+          <div id="imageTab" class="tab-pane fade">
+            <h3>Images</h3>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+          </div>
+
+          <div id="ripTab" class="tab-pane fade">
+            <h3>Audio Rip</h3>
+            <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+          </div>
+        </div>
+    </div> -->
 
     <script>
       // You can also require other files to run in this process
