@@ -1,38 +1,45 @@
 const { dialog } = require('electron').remote;
 const { shell } = require('electron');
 const path = require('path');
-var ffmpeg_static = require('ffmpeg-static');
-var fluent_ffmpeg = require('fluent-ffmpeg');
-fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
-
+const ffmpeg_static = require('ffmpeg-static');
+const fluent_ffmpeg = require('fluent-ffmpeg');
 const DEBUG = 1;
 
-const supportedImageFormats = ["jpeg", "png", "bmp", "tiff", "gif"];
-const supportedVideoFormats = ["avi", "mp4"];
-const supportedAudioFormats = [];
+fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
 
-var CurrentTask = null;
+const pageID = {
+    Create_SourceField : 'newInputBox',
+    Create_DestinationField : 'newOutputBox',
+    Create_OperationField : 'newOperationBox',
+    Tasks_CurrentField : 'currentTaskContainer',
+    Tasks_CompletedField : 'resultContainer',
+}; Object.freeze(pagID);
+var TasksMap = undefined;
 
 if(typeof($.fn.popover) != 'undefined') {
     console.log("Bootstrap")
 }
 
-function GetLocalFile(elementName) {
-    let filePath = dialog.showOpenDialog({properties: ["openFile"]});
-    let element = document.getElementById(elementName);
-
-    element.title = filePath[0];
-    element.value = filePath[0].slice(filePath[0].lastIndexOf("\\") + 1);
+function CreateTask_SetInput_Helper(ID, filePath) {
+    let e = document.getElementById(elementName);
+    if (e == undefined) return;
+    element.title = filePath;
+    element.value = path.basename(filePath);
 }
 
-function SaveLocalFile(elementName) {
-    let filePath = dialog.showSaveDialog();
-    //filePath = new String(filePath);
-    let element = document.getElementById(elementName);
+function GetLocalFile(elementName) {
+    // open file chooser
+    let filePath = dialog.showOpenDialog({properties: ["openFile"]});
+    if (filePath == undefined) return;
 
-    element.title = filePath;
-    element.value = filePath.slice(filePath.lastIndexOf("\\") + 1);
-    //element.value = path.basename(filePath);
+    CreateTask_SetInput_Helper(ID, filePath[0]);
+}
+
+function SaveLocalFile(ID) {
+    let filePath = dialog.showSaveDialog();
+    if (filePath == undefined) return;
+
+    CreateTask_SetInput_Helper(ID, filePath[0]);
 }
 
 function msToMinSec(time) {
@@ -44,6 +51,8 @@ function msToMinSec(time) {
     
     return result;
 }
+
+function CreateTask()
 
 function ConvertVideo(source, destination, format) {
     let startTime;
@@ -64,15 +73,14 @@ function ConvertVideo(source, destination, format) {
 }
 
 function ConvertVideoButton() {
-    let input = document.getElementById('newInputBox').title;
-    let operation = document.getElementById('newOperationBox').value;
-    let output = document.getElementById('newOutputBox').title;
+    let input = document.getElementById(pageID.Create_SourceField).title;
+    let operation = document.getElementById(pageID.Create_OperationField).value;
+    let output = document.getElementById(pagID.Create_DestinationField).title;
 
     output += '.' + operation;
 
-    console.log({input, operation, output});
-
-    if (input.slice(input.lastIndexOf('.')) != operation)
+    path.extname(input)
+    if (path.extname(input) != operation)
         ConvertVideo(input, output, operation);
 }
 
@@ -184,4 +192,15 @@ function MoveCurrentTaskToComplete(duration) {
     let doc = document.getElementById('currentTaskContainer');
     doc.innerHTML = '';
     doc.appendChild(SCT_SectionHeaderHelper('No Current Task'));
+}
+
+function createElement(elType, attr) {
+    let e = document.createElement(elType);
+    setAttributes(e, attr);
+}
+
+function setAttributes(el, attr) {
+    for (var key in attr) {
+        el.setAttribute(key, attr[key]);
+    }
 }
