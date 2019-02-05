@@ -5,12 +5,13 @@ var ffmpeg_static = require('ffmpeg-static');
 var fluent_ffmpeg = require('fluent-ffmpeg');
 fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
 
+const DEBUG = 1;
+
 const supportedImageFormats = ["jpeg", "png", "bmp", "tiff", "gif"];
 const supportedVideoFormats = ["avi", "mp4"];
 const supportedAudioFormats = [];
-const DEBUG = 1;
 
-class Chain
+var CurrentTask = null;
 
 if(typeof($.fn.popover) != 'undefined') {
     console.log("Bootstrap")
@@ -52,10 +53,14 @@ function ConvertVideo(source, destination, format) {
             startTime = new Date(); console.log({startTime: startTime});
         })
         .on('end', (stdout, stderr) => { 
-            AppendVideoResultElement(source, destination, msToMinSec(new Date() - startTime));
+            MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime));
         })
-        .on('error', (err) => { console.log('an error happened: ' + err.message); })
+        .on('error', (err) => { 
+            console.log('an error happened: ' + err.message);
+            MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime)); 
+        })
         .save(destination);
+    SetCurrentTask(source, destination, format, proc);
 }
 
 function ConvertVideoButton() {
@@ -122,45 +127,61 @@ function AppendVideoResultElement(source, destination, duration) {
     resultContainer.appendChild(element);
 }
 
-function SetCurrentTask(source, destination, format) {
+function SCT_SectionHeaderHelper(headerString) {
+    let element = document.createElement('div');
+    element.setAttribute('class', 'card-header');
+    element.innerText = headerString;
+    return element;
+}
+
+function SCT_SourceSmallHelper(filePath) {
+    let element = document.createElement('small');
+    element.setAttribute('class', 'text-muted');
+    element.innerText = JSON.stringify(filePath);
+    return element;
+}
+
+function SCT_TextAndSmallHelper(text, filePath) {
+    let element = document.createElement('div');
+    element.setAttribute('class', 'card-body');
+    element.innerText = text;
+    element.appendChild(SCT_SourceSmallHelper(filePath));
+    return element;
+}
+
+function SCT_CancelButton() {
+    let button = document.createElement('button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('class', 'btn btn-primary');
+    button.setAttribute('onclick', 'SCT_KillFunc()');
+    button.innerText = 'Cancel';
+    return button;
+}
+
+function SCT_KillFunc() {
+    if (CurrentTask != null) {
+        CurrentTask.Proc.kill();
+        MoveCurrentTaskToComplete(0);
+    }
+}
+
+function SetCurrentTask(source, destination, format, proc) {
+    let doc = document.createElement('div');
+    CurrentTask = {Source: source, Destination: destination, Format: format, Proc: proc};
+
+    doc.appendChild(SCT_SectionHeaderHelper('CurrentTask'));
+    doc.appendChild(SCT_TextAndSmallHelper('Source: ', source));
+    doc.appendChild(SCT_TextAndSmallHelper('Destination: ', destination));
+    doc.appendChild(SCT_TextAndSmallHelper('Conversion: ', format))
+    doc.appendChild(SCT_CancelButton());
+
+    document.getElementById('currentTaskContainer').innerHTML = doc.innerHTML;
+}
+
+function MoveCurrentTaskToComplete(duration) {
+    AppendVideoResultElement(CurrentTask.Source, CurrentTask.Destination, duration);
+    CurrentTask = null;
     let doc = document.getElementById('currentTaskContainer');
-
-    let taskElement = document.createElement('div');
-    taskElement.setAttribute('class', 'card-header');
-    taskElement.innerText = 'Current Task';
-
     doc.innerHTML = '';
-    doc.appendChild(taskElement);
-
-    taskElement = document.createElement('div');
-    taskElement.setAttribute('class', 'card-body');
-    taskElement.innerText = 'Source: ';
-
-    let subElement = document.createElement('small');
-    subElement.setAttribute('class', 'text-muted');
-    subElement.innerText = JSON.stringify(source);
-    
-    taskElement.appendChild(subElement);
-
-    doc.appendChild(taskElement);
-
-    taskElement = document.createElement('div');
-    let test = taskElement.setAttribute('class', 'card-body');
-    taskElement.innerText = 'Source: ';
-
-    subElement = document.createElement('small');
-    subElement.setAttribute('class', 'text-muted');
-    subElement.innerText = JSON.stringify(destination);
-    
-    taskElement.appendChild(subElement);
-    
-    taskElement = document.createElement('div');
-    taskElement.setAttribute('class', 'card-body');
-    taskElement.innerText = 'Conversion: ';
-
-    subElement = document.createElement('small');
-    subElement.setAttribute('class', 'text-muted');
-    subElement.innerText = JSON.stringify(format);
-    
-    taskElement.appendChild(subElement);
+    doc.appendChild(SCT_SectionHeaderHelper('No Current Task'));
 }
