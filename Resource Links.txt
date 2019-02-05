@@ -23,6 +23,9 @@ https://stackoverflow.com/questions/7632589/getting-realtime-output-from-ffmpeg-
 https://www.npmjs.com/package/fluent-ffmpeg
 https://github.com/fluent-ffmpeg/node-fluent-ffmpeg#fluent-ffmpeg-api-for-nodejs-
 
+<!-- Fluent ffmpeg Get Duration -->
+https://stackoverflow.com/questions/48219003/ffmpeg-how-do-i-get-the-duration-onto-the-node-js
+
 <!-- NPM - ffmpeg Progress Wrapper -->
 https://www.npmjs.com/package/ffmpeg-progress-wrapper
 

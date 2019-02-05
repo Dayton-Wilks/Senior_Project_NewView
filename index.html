@@ -20,13 +20,6 @@
   </head>
   <body>
 
-    <!-- <nav class="navbar navbar-expand-md mb-4">
-      <a class="navbar-brand">link</a>
-      <button class="navbar-toggler" type="button">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    </nav> -->
-
     <div class="container" id="formContainer">
       <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
@@ -53,10 +46,10 @@
               <div class="form-group">
                 <label for="newOperationBox">Convert To</label>
                 <select class="form-control" id="newOperationBox">
-                  <option>avi</options>
-                  <option>mp4</options>
-                  <option>Option 3</options>
-                  <option>Option 4</options>
+                  <option>avi</option>
+                  <option>mp4</option>
+                  <option>Option 3</option>
+                  <option>Option 4</option>
                 </select>
               </div>
               <label for="newOutputBox">Output</label>
@@ -73,52 +66,10 @@
       </div>      
     </div>
 
-    <!-- <div class="container">
-      <div class="tab-content">
-
-          <div id="videoTab" class="tab-pane fade-in active">
-            <h3>Video</h3>
-            <div class="card">
-              <form class="card-body">
-                <h3>Video</h3>
-                <div class="input-group">
-                    <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
-                    <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
-                </div>
-                <div class="form-group">
-                  <label for="newOperationBox">Convert To</label>
-                  <select class="form-control" id="newOperationBox">
-                    <option>Option 1</options>
-                    <option>Option 2</options>
-                    <option>Option 3</options>
-                    <option>Option 4</options>
-                  </select>
-                </div>
-                <label for="newOutputBox">Output</label>
-                <div class="input-group">
-                    <button type="button" class="btn btn-primary" onclick="SaveLocalFile('newOutputBox')">Find File</button>
-                    <input type="text" class="form-control" id="newOutputBox" placeholder="Browse" title="File" readonly>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div id="audioTab" class="tab-pane fade">
-            <h3>Audio</h3>
-            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-          </div>
-
-          <div id="imageTab" class="tab-pane fade">
-            <h3>Images</h3>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
-          </div>
-
-          <div id="ripTab" class="tab-pane fade">
-            <h3>Audio Rip</h3>
-            <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-          </div>
-        </div>
-    </div> -->
+    <div class="container card border-secondary" id="resultContainer">
+      <div class="card-header">Completed Tasks</div>
+      <div class="card border-secondary"><div class="card-header">test1Header</div><div class="card-body">test1Body</div></div>
+    </div>
 
     <script>
       // You can also require other files to run in this process
