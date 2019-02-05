@@ -10,17 +10,17 @@ const supportedVideoFormats = ["avi", "mp4"];
 const supportedAudioFormats = [];
 const DEBUG = 1;
 
+class Chain
+
 if(typeof($.fn.popover) != 'undefined') {
     console.log("Bootstrap")
 }
 
 function GetLocalFile(elementName) {
     let filePath = dialog.showOpenDialog({properties: ["openFile"]});
-    //filePath = new String(filePath);
     let element = document.getElementById(elementName);
 
     element.title = filePath[0];
-    //element.value = path.basename(filePath);
     element.value = filePath[0].slice(filePath[0].lastIndexOf("\\") + 1);
 }
 
@@ -43,7 +43,6 @@ function msToMinSec(time) {
     
     return result;
 }
-
 
 function ConvertVideo(source, destination, format) {
     let startTime;
@@ -121,4 +120,47 @@ function AppendVideoResultElement(source, destination, duration) {
     // Add Element to Document
     let resultContainer = document.getElementById('resultContainer');
     resultContainer.appendChild(element);
+}
+
+function SetCurrentTask(source, destination, format) {
+    let doc = document.getElementById('currentTaskContainer');
+
+    let taskElement = document.createElement('div');
+    taskElement.setAttribute('class', 'card-header');
+    taskElement.innerText = 'Current Task';
+
+    doc.innerHTML = '';
+    doc.appendChild(taskElement);
+
+    taskElement = document.createElement('div');
+    taskElement.setAttribute('class', 'card-body');
+    taskElement.innerText = 'Source: ';
+
+    let subElement = document.createElement('small');
+    subElement.setAttribute('class', 'text-muted');
+    subElement.innerText = JSON.stringify(source);
+    
+    taskElement.appendChild(subElement);
+
+    doc.appendChild(taskElement);
+
+    taskElement = document.createElement('div');
+    let test = taskElement.setAttribute('class', 'card-body');
+    taskElement.innerText = 'Source: ';
+
+    subElement = document.createElement('small');
+    subElement.setAttribute('class', 'text-muted');
+    subElement.innerText = JSON.stringify(destination);
+    
+    taskElement.appendChild(subElement);
+    
+    taskElement = document.createElement('div');
+    taskElement.setAttribute('class', 'card-body');
+    taskElement.innerText = 'Conversion: ';
+
+    subElement = document.createElement('small');
+    subElement.setAttribute('class', 'text-muted');
+    subElement.innerText = JSON.stringify(format);
+    
+    taskElement.appendChild(subElement);
 }
