@@ -1,16 +1,15 @@
+/********************************************************
+*
+
+*/
 const { dialog } = require('electron').remote;
 const { shell } = require('electron');
 const array = require('array');
 const path = require('path');
 const ffmpeg_static = require('ffmpeg-static');
 const fluent_ffmpeg = require('fluent-ffmpeg');
-const DEBUG = 1;
 
 fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
-
-if(typeof($.fn.popover) != 'undefined') {
-    console.log("Bootstrap")
-}
 
 const pageID = {
     Create_SourceField : 'newInputBox',
@@ -27,6 +26,19 @@ var StateType = {
     Complete:3,
     Error:4
 };
+
+function setAttributes(el, attr) {
+    for (var key in attr) {
+        el.setAttribute(key, attr[key]);
+    }
+}
+
+function createElement(elType, attr, innerText) {
+    let e = document.createElement(elType);
+    if (attr != undefined) setAttributes(e, attr);
+    if (innerText != undefined) e.innerText = innerText;
+    return e;
+}
 
 class Task {
     constructor() {
@@ -59,26 +71,24 @@ class Task {
     }
    
     _CreateCurrentElement() {
-        let element = createElement('div');
-        let headerString = 'Current Task'
+        let element = document.createElement('div');
+        console.log(element.tagName);
 
         // Create Header
-        let t = createElement('div', {'class':'card-header'}, headerString);
-        console.log(element);
-        console.log(t);
+        let t = createElement('div', {'class':'card-header'}, 'Task ' + this.ID);
         element.appendChild(t);
 
         // Source Section
-        element.appendChild(_CreateSmallElement_Helper('Source: ', this.Source));
+        element.appendChild(this._CreateSmallElement_Helper('Source: ', this.Source));
 
         // Destination Section
-        element.appendChild(_CreateSmallElement_Helper('Destination: ', this.Destination));
+        element.appendChild(this._CreateSmallElement_Helper('Destination: ', this.Destination));
 
         // Operation Type Section
-        element.appendChild(_CreateSmallElement_Helper('Operation: ', this.Operation));
+        element.appendChild(this._CreateSmallElement_Helper('Operation: ', this.Operation));
 
         // Cancel Button
-        element.appendChild(_CreateCancelButton_Helper());
+        element.appendChild(this._CreateCancelButton_Helper());
 
         return element;
     }
@@ -92,14 +102,14 @@ class Task {
             headerString += duration.Minutes + ':' + duration.Seconds;
 
         // Task Header
-        console.log(element);
+        //console.log(element);
         element.appendChild(createElement('div', {'class':'card-header'}, headerString));
 
         // Create Source Section
-        element.appendChild(this.Source);
+        element.appendChild(this._FileResultElement(this.Source));
 
         // Create Destination Section
-        element.appendChild(this.Destination);
+        element.appendChild(this._FileResultElement(this.Destination));
 
         return element;
     }
@@ -164,29 +174,23 @@ class Task {
     }
 } 
 
-function setAttributes(el, attr) {
-    for (var key in attr) {
-        el.setAttribute(key, attr[key]);
-    }
-}
 
-function createElement(elType, attr, innerText) {
-    let e = document.createElement(elType);
-    setAttributes(e, attr);
-    if (innerText != undefined) e.innerText = innerText;
-}
 
 var CurrentTaskArray = array();
 CurrentTaskArray.on('change', Update_CurrentTasks);
 
 function Update_CurrentTasks() {
     console.log("Current Updating");
+
     let container = document.createElement('div');
+
     container.append(createElement('div', {'class':'card-header'}, 'Current Task'));
     CurrentTaskArray.each((val, i) => {
         container.appendChild(val.CreateTaskElement());
     });
-    document.getElementById(pageID.Tasks_CurrentField).innerHTML = container.innerHTML;
+
+    let doc = document.getElementById(pageID.Tasks_CurrentField);
+    doc.innerHTML = container.innerHTML;
     console.log('Finish Current Update');
 }
 
@@ -199,7 +203,6 @@ function Update_CompleteTasks() {
     container.append(createElement('div', {'class':'card-header'}, 'Complete Tasks'));
     CompleteTaskArray.each((val, i) => {
         let t = val.CreateTaskElement()
-        console.log({val, t,innerHTML});
         container.appendChild(val.CreateTaskElement());
     });
     document.getElementById(pageID.Tasks_CompletedField).innerHTML = container.innerHTML;
@@ -258,9 +261,8 @@ function ConvertVideo(source, destination, format) {
             console.log('Ending Task ' + aTask.ID);
             aTask.State = StateType.Complete;
             aTask.EndTime = new Date();
-            CurrentTaskArray = CurrentTaskArray.select((item) => {
-                return item.ID != aTask.ID;
-            })
+            const index = CurrentTaskArray.lastIndexOf(aTask);
+            CurrentTaskArray.splice(index, 1);
             CompleteTaskArray.unshift(aTask);
         })
         .on('error', (err) => {
@@ -268,28 +270,11 @@ function ConvertVideo(source, destination, format) {
             console.log(err);
             aTask.State = StateType.Error;
             aTask.EndTime = new Date();
-            CurrentTaskArray = CurrentTaskArray.select((item) => {
-                return item.ID != aTask.ID;
-            })
+            const index = CurrentTaskArray.lastIndexOf(aTask);
+            CurrentTaskArray.splice(index, 1);
             CompleteTaskArray.unshift(aTask);
         })
         .save(destination);
-
-    // let startTime;
-    // let proc = fluent_ffmpeg(source)
-    //     .toFormat(format)
-    //     .on('start', () => { 
-    //         startTime = new Date(); console.log({startTime: startTime});
-    //     })
-    //     .on('end', (stdout, stderr) => { 
-    //         MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime));
-    //     })
-    //     .on('error', (err) => { 
-    //         console.log('an error happened: ' + err.message);
-    //         MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime)); 
-    //     })
-    //     .save(destination);
-    // SetCurrentTask(source, destination, format, proc);
 }
 
 function ConvertVideoButton() {
