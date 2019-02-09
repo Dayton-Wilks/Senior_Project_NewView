@@ -1,5 +1,6 @@
 const { dialog } = require('electron').remote;
 const { shell } = require('electron');
+const array = require('array');
 const path = require('path');
 const ffmpeg_static = require('ffmpeg-static');
 const fluent_ffmpeg = require('fluent-ffmpeg');
@@ -7,24 +8,209 @@ const DEBUG = 1;
 
 fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
 
+if(typeof($.fn.popover) != 'undefined') {
+    console.log("Bootstrap")
+}
+
 const pageID = {
     Create_SourceField : 'newInputBox',
     Create_DestinationField : 'newOutputBox',
     Create_OperationField : 'newOperationBox',
     Tasks_CurrentField : 'currentTaskContainer',
     Tasks_CompletedField : 'resultContainer',
-}; Object.freeze(pagID);
-var TasksMap = undefined;
+}; Object.freeze(pageID);
 
-if(typeof($.fn.popover) != 'undefined') {
-    console.log("Bootstrap")
+var taskCounter = 0;
+var StateType = { 
+    Working:1,
+    Pending:2,
+    Complete:3,
+    Error:4
+};
+
+class Task {
+    constructor() {
+        this.Source = null;
+        this.Destination = null;
+        this.Operation = null;
+        this.StartTime = null;
+        this.EndTime = null;
+        this.FFmpeg_Instance = fluent_ffmpeg();
+        this.Thread_Instance = null;
+        this.ID = taskCounter++; 
+        this.State = StateType.Pending; 
+        // x instanceof Task
+    }
+    
+    CreateTaskElement() {
+        if (this.State == StateType.Pending || this.State == StateType.Working)
+            return this._CreateCurrentElement();
+        else if (this.State == StateType.Complete)
+            return this._CreateCompleteElement();
+        else if (this.State == StateType.Error)
+            return this._CreateErrorElement();
+        console.log('ERROR: Creating Task Element'); 
+        return null;
+    }
+
+    static CancelTask(ID) { // Task.CancelTask(ID)
+        if (this._Cancel()) console.log('Cancelled Task ' + this.ID);
+        else console.log('Unable To Cancel Task ' + this.ID);
+    }
+   
+    _CreateCurrentElement() {
+        let element = createElement('div');
+        let headerString = 'Current Task'
+
+        // Create Header
+        let t = createElement('div', {'class':'card-header'}, headerString);
+        console.log(element);
+        console.log(t);
+        element.appendChild(t);
+
+        // Source Section
+        element.appendChild(_CreateSmallElement_Helper('Source: ', this.Source));
+
+        // Destination Section
+        element.appendChild(_CreateSmallElement_Helper('Destination: ', this.Destination));
+
+        // Operation Type Section
+        element.appendChild(_CreateSmallElement_Helper('Operation: ', this.Operation));
+
+        // Cancel Button
+        element.appendChild(_CreateCancelButton_Helper());
+
+        return element;
+    }
+
+    _CreateCompleteElement() {
+        let element = createElement('div', {'class':'card border-secondary'});
+        let duration = msToMinSec(this.EndTime - this.StartTime);
+        let headerString = 'Task ' + this.ID + ' - '; 
+
+        if (this.EndTime != null && this.StartTime != null) 
+            headerString += duration.Minutes + ':' + duration.Seconds;
+
+        // Task Header
+        console.log(element);
+        element.appendChild(createElement('div', {'class':'card-header'}, headerString));
+
+        // Create Source Section
+        element.appendChild(this.Source);
+
+        // Create Destination Section
+        element.appendChild(this.Destination);
+
+        return element;
+    }
+
+    _Cancel() {
+        if (this.State == StateType.Working && this.FFmpeg_Instance != null) {
+            this.FFmpeg_Instance.kill();
+            return true;
+        }
+        return false;
+    }
+
+    _CreateCancelButton_Helper() {
+        return createElement(
+            'button',
+            {
+                'type' : 'button',
+                'class' : 'btn btn-primary',
+                'onclick' : 'Task.CancelTask(' + this.ID + ')'
+            },
+            'Cancel'
+        );
+    }
+
+    _CreateSmallElement_Helper(text, filePath) {
+            let element = createElement('div', {'class':'card-body'}, text);
+            element.appendChild(
+                createElement('small', {'class':'text-muted'}, JSON.stringify(filePath))
+                );
+            return element;
+    }
+
+    _FileResultElement(pathString) {
+        let element = createElement('div', {'class':'card-body'});
+
+        // Create Button
+        element.appendChild(
+            createElement(
+                'div',
+                {
+                    'type':'button',
+                    'class':'btn btn-primary',
+                    'onclick': "shell.showItemInFolder(" + JSON.stringify(pathString) + ")"
+                },
+                'Open'
+        ));
+
+        // Create Label
+        element.appendChild(
+            createElement(
+                'label', 
+                {},
+                path.basename(pathString)
+            )
+        );
+        
+        return element;
+    }
+
+    _CreateErrorElement() { // Expand Later
+        return createElement('div', {'TaskID':this.ID}, 'Error');
+    }
+} 
+
+function setAttributes(el, attr) {
+    for (var key in attr) {
+        el.setAttribute(key, attr[key]);
+    }
+}
+
+function createElement(elType, attr, innerText) {
+    let e = document.createElement(elType);
+    setAttributes(e, attr);
+    if (innerText != undefined) e.innerText = innerText;
+}
+
+var CurrentTaskArray = array();
+CurrentTaskArray.on('change', Update_CurrentTasks);
+
+function Update_CurrentTasks() {
+    console.log("Current Updating");
+    let container = document.createElement('div');
+    container.append(createElement('div', {'class':'card-header'}, 'Current Task'));
+    CurrentTaskArray.each((val, i) => {
+        container.appendChild(val.CreateTaskElement());
+    });
+    document.getElementById(pageID.Tasks_CurrentField).innerHTML = container.innerHTML;
+    console.log('Finish Current Update');
+}
+
+var CompleteTaskArray = array();
+CompleteTaskArray.on('change', Update_CompleteTasks);
+
+function Update_CompleteTasks() {
+    console.log("Complete Updating");
+    let container = document.createElement('div');
+    container.append(createElement('div', {'class':'card-header'}, 'Complete Tasks'));
+    CompleteTaskArray.each((val, i) => {
+        let t = val.CreateTaskElement()
+        console.log({val, t,innerHTML});
+        container.appendChild(val.CreateTaskElement());
+    });
+    document.getElementById(pageID.Tasks_CompletedField).innerHTML = container.innerHTML;
+    console.log('Finish Complete Update');
 }
 
 function CreateTask_SetInput_Helper(ID, filePath) {
-    let e = document.getElementById(elementName);
+    let e = document.getElementById(ID);
     if (e == undefined) return;
-    element.title = filePath;
-    element.value = path.basename(filePath);
+    e.title = filePath;
+    e.value = path.basename(filePath);
 }
 
 function GetLocalFile(elementName) {
@@ -32,14 +218,14 @@ function GetLocalFile(elementName) {
     let filePath = dialog.showOpenDialog({properties: ["openFile"]});
     if (filePath == undefined) return;
 
-    CreateTask_SetInput_Helper(ID, filePath[0]);
+    CreateTask_SetInput_Helper(elementName, filePath[0]);
 }
 
 function SaveLocalFile(ID) {
     let filePath = dialog.showSaveDialog();
     if (filePath == undefined) return;
 
-    CreateTask_SetInput_Helper(ID, filePath[0]);
+    CreateTask_SetInput_Helper(ID, filePath);
 }
 
 function msToMinSec(time) {
@@ -52,30 +238,64 @@ function msToMinSec(time) {
     return result;
 }
 
-function CreateTask()
+// function CreateTask()
 
 function ConvertVideo(source, destination, format) {
-    let startTime;
-    let proc = fluent_ffmpeg(source)
+    let aTask = new Task();
+    aTask.Source = source;
+    aTask.Destination = destination;
+    aTask.Operation = format;
+    aTask.FFmpeg_Instance
+        .input(source)
         .toFormat(format)
-        .on('start', () => { 
-            startTime = new Date(); console.log({startTime: startTime});
+        .on('start', () => {
+            console.log('Starting Task ' + aTask.ID);
+            aTask.State = StateType.Working;
+            aTask.StartTime = new Date();
+            CurrentTaskArray.push(aTask);
         })
-        .on('end', (stdout, stderr) => { 
-            MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime));
+        .on('end', (stdout, stderr) => {
+            console.log('Ending Task ' + aTask.ID);
+            aTask.State = StateType.Complete;
+            aTask.EndTime = new Date();
+            CurrentTaskArray = CurrentTaskArray.select((item) => {
+                return item.ID != aTask.ID;
+            })
+            CompleteTaskArray.unshift(aTask);
         })
-        .on('error', (err) => { 
-            console.log('an error happened: ' + err.message);
-            MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime)); 
+        .on('error', (err) => {
+            console.log('ffmpeg encountered an error:');
+            console.log(err);
+            aTask.State = StateType.Error;
+            aTask.EndTime = new Date();
+            CurrentTaskArray = CurrentTaskArray.select((item) => {
+                return item.ID != aTask.ID;
+            })
+            CompleteTaskArray.unshift(aTask);
         })
         .save(destination);
-    SetCurrentTask(source, destination, format, proc);
+
+    // let startTime;
+    // let proc = fluent_ffmpeg(source)
+    //     .toFormat(format)
+    //     .on('start', () => { 
+    //         startTime = new Date(); console.log({startTime: startTime});
+    //     })
+    //     .on('end', (stdout, stderr) => { 
+    //         MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime));
+    //     })
+    //     .on('error', (err) => { 
+    //         console.log('an error happened: ' + err.message);
+    //         MoveCurrentTaskToComplete(msToMinSec(new Date() - startTime)); 
+    //     })
+    //     .save(destination);
+    // SetCurrentTask(source, destination, format, proc);
 }
 
 function ConvertVideoButton() {
     let input = document.getElementById(pageID.Create_SourceField).title;
     let operation = document.getElementById(pageID.Create_OperationField).value;
-    let output = document.getElementById(pagID.Create_DestinationField).title;
+    let output = document.getElementById(pageID.Create_DestinationField).title;
 
     output += '.' + operation;
 
@@ -135,44 +355,6 @@ function AppendVideoResultElement(source, destination, duration) {
     resultContainer.appendChild(element);
 }
 
-function SCT_SectionHeaderHelper(headerString) {
-    let element = document.createElement('div');
-    element.setAttribute('class', 'card-header');
-    element.innerText = headerString;
-    return element;
-}
-
-function SCT_SourceSmallHelper(filePath) {
-    let element = document.createElement('small');
-    element.setAttribute('class', 'text-muted');
-    element.innerText = JSON.stringify(filePath);
-    return element;
-}
-
-function SCT_TextAndSmallHelper(text, filePath) {
-    let element = document.createElement('div');
-    element.setAttribute('class', 'card-body');
-    element.innerText = text;
-    element.appendChild(SCT_SourceSmallHelper(filePath));
-    return element;
-}
-
-function SCT_CancelButton() {
-    let button = document.createElement('button');
-    button.setAttribute('type', 'button');
-    button.setAttribute('class', 'btn btn-primary');
-    button.setAttribute('onclick', 'SCT_KillFunc()');
-    button.innerText = 'Cancel';
-    return button;
-}
-
-function SCT_KillFunc() {
-    if (CurrentTask != null) {
-        CurrentTask.Proc.kill();
-        MoveCurrentTaskToComplete(0);
-    }
-}
-
 function SetCurrentTask(source, destination, format, proc) {
     let doc = document.createElement('div');
     CurrentTask = {Source: source, Destination: destination, Format: format, Proc: proc};
@@ -192,15 +374,4 @@ function MoveCurrentTaskToComplete(duration) {
     let doc = document.getElementById('currentTaskContainer');
     doc.innerHTML = '';
     doc.appendChild(SCT_SectionHeaderHelper('No Current Task'));
-}
-
-function createElement(elType, attr) {
-    let e = document.createElement(elType);
-    setAttributes(e, attr);
-}
-
-function setAttributes(el, attr) {
-    for (var key in attr) {
-        el.setAttribute(key, attr[key]);
-    }
 }

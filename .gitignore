@@ -3,3 +3,5 @@ renderer.js
 vendors.js
 release-builds
 /TestFiles/*
+npmSetup.bat
+/.vscode/*

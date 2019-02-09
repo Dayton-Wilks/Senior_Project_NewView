@@ -1,27 +1,28 @@
 {
   "name": "NewView",
   "version": "0.1.0",
-  "description": "A minimal Electron application",
+  "description": "A general purpose media converter",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "repository": "https://github.com/Dayton-Wilks/Senior_Project_NewView",
   "keywords": [
-    "Electron"
+    "Electron",
+    "Media",
+    "Converter"
   ],
   "author": "Dayton Wilks",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^3.0.7",
-    "webpack": "^4.29.1"
+    "electron": "^3.0.7"
   },
   "dependencies": {
+    "array": "^0.4.3",
+    "async-lock": "^1.1.4",
     "bootstrap": "^4.2.1",
-    "collections": "^5.1.7",
     "ffmpeg-progress-wrapper": "^0.4.0",
     "ffmpeg-static": "^2.4.0",
-    "ffmpeg.js": "^3.1.9001",
     "fluent-ffmpeg": "^2.1.2",
     "jimp": "^0.6.0",
     "jquery": "^3.3.1",
