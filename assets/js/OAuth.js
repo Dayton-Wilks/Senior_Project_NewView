@@ -103,9 +103,9 @@ module.exports = class GoogleOauthProvider {
                     }
                 },
                 (err, httpResponse, body) => {
-                    console.log({err, httpResponse, body});
+                    //console.log({err, httpResponse, body});
                     const cred = JSON.parse(body);
-                    console.log(cred);
+                    //console.log(cred);
     
                     this.oauth2Client.setCredentials(cred);
                 }
@@ -119,7 +119,6 @@ module.exports = class GoogleOauthProvider {
 
     CreateLoginWindow() {
         if (this._DataErrorCheck()) return;
-        //var self = this;
 
         this.authWindow = new BrowserWindow(
         { 

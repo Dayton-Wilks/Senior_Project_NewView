@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta charset="UTF-8">
+    <title>Drive File Select</title>
+
+    <!-- NewView CSS-->
+    <link rel="stylesheet" href="assets/CSS/NewView.css" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
+ 
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+
+  </head>
+  <body>
+
+    <div class="container" id="formContainer">
+     
+    </div>
+
+    <div class="container card border-secondary" id="currentTaskContainer">
+      <div class="card-header">Current Task</div>
+    </div>
+
+    <div class="container card border-secondary" id="resultContainer">
+      <div class="card-header">Completed Tasks</div>
+    </div>
+
+    <script>
+      // You can also require other files to run in this process
+      //require('renderer.js')
+    </script>
+
+    <script src="assets/js/DriveFileSelect.js"></script>
+  </body>
+</html>
