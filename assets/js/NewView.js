@@ -6,6 +6,14 @@ const array = require('array');
 const path = require('path');
 const ffmpeg_static = require('ffmpeg-static');
 const fluent_ffmpeg = require('fluent-ffmpeg');
+const { google } = require('googleapis');
+const app = require('electron').remote.app;
+
+const GoogleOauthProvider = require(path.join(app.getAppPath(), 'assets/js/OAuth.js'));
+
+// var basepath = app.getAppPath();
+// console.log(path.join(basepath, 'assets/js/test.js'));
+// const Testing = require( path.join(basepath, 'assets/js/test.js') );
 
 //********************************************************
 // Initilization
@@ -71,11 +79,6 @@ class Task {
             return this._CreateErrorElement();
         console.log('ERROR: Creating Task Element'); 
         return null;
-    }
-
-    static CancelTask(ID) { // Task.CancelTask(ID)
-        if (this._Cancel()) console.log('Cancelled Task ' + this.ID);
-        else console.log('Unable To Cancel Task ' + this.ID);
     }
    
     //********************************************************
@@ -146,7 +149,7 @@ class Task {
             {
                 'type' : 'button',
                 'class' : 'btn btn-primary',
-                'onclick' : 'Task.CancelTask(' + this.ID + ')'
+                'onclick' : 'CancelTask(' + this.ID + ')'
             },
             'Cancel'
         );
@@ -187,6 +190,14 @@ class Task {
         return element;
     }
 } 
+
+function CancelTask(ID) { // Task.CancelTask(ID)
+    let index = CurrentTaskArray.find(aTask);
+    if (index >= 0) {
+        if (CurrentTaskArray[index]._Cancel()) console.log('Cancelled Task ' + this.ID);
+        else console.log('Unable To Cancel Task ' + this.ID);
+    }
+}
 
 //********************************************************
 // Task Array Functions
@@ -309,6 +320,15 @@ function ConvertVideoButton() {
         ConvertVideo(input, output, operation);
 }
 
+let my0authInfo = { 
+    keyFile:"assets\\KEY\\client_secret.json",
+    scopes: ['https://www.googleapis.com/auth/drive.metadata.readonly'] 
+}
+
+const OAuth = new GoogleOauthProvider(my0authInfo);
+
+OAuth.CreateLoginWindow();
+
 //********************************************************
 //********************************************************
 // Drive API Stuff
@@ -318,111 +338,143 @@ function ConvertVideoButton() {
 // const opn = require('opn');
 // const destroyer = require('server-destroy');
 
-const {google} = require('googleapis');
-const { BrowserWindow } = require('electron').remote; 
-const  app = require('electron').remote.app;
+// const {google} = require('googleapis');
+// const { BrowserWindow } = require('electron').remote; 
+// const  app = require('electron').remote.app;
 
-var basepath = app.getAppPath();
+//var basepath = app.getAppPath();
 
-const sec = {
-    client_id:"<INSERT>",
-    client_secret:"<INSERT>",
-    auth_uri:"https://oauth2.googleapis.com/token"
-}
+// const sec = {
+//     client_id:"925814770662-6vr26bdu52mt4u13t0vmd1et1hvto3bt.apps.googleusercontent.com",
+//     client_secret:"H1X8eE-hj4x-vUZCaMiDz5qV",
+//     auth_uri:"https://oauth2.googleapis.com/token"
+// }
 
-const oauth2Client = new google.auth.OAuth2(
-    sec.client_id,
-    sec.client_secret,
-    "http://localhost"
-  );
+// const oauth2Client = new google.auth.OAuth2(
+//     sec.client_id,
+//     sec.client_secret,
+//     "http://localhost"
+//   );
 
-const scopes = [
-    'https://www.googleapis.com/auth/drive.metadata.readonly'
-];
+// const scopes = [
+//     'https://www.googleapis.com/auth/drive.metadata.readonly'
+// ];
 
-const url = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: scopes
-});
+// const url = oauth2Client.generateAuthUrl({
+//     access_type: 'offline',
+//     scope: scopes
+// });
+
+
+// var authWindow;
+// function CreateLoginWindow() {
+//     authWindow = new BrowserWindow(
+//     { 
+//         width: 800, 
+//         height: 600, 
+//         show: false, 
+//         'node-integration': true 
+//     });
+
+//     authWindow.loadURL(url);
+//     authWindow.show();
+
+//     authWindow.webContents.on('will-navigate', function (event, url) {
+//         handleCallback(url);
+//     });
+
+//     authWindow.webContents.on(
+//         'did-get-redirect-request', 
+//         function (event, oldUrl, newUrl) {
+//         handleCallback(newUrl);
+//     });
+
+//     // Reset the authWindow on close
+//     authWindow.on(
+//         'close', 
+//         () => {authWindow = null;},
+//         false
+//     );
+// }
  
-var authWindow = new BrowserWindow(
-{ 
-    width: 800, 
-    height: 600, 
-    show: false, 
-    'node-integration': true 
-});
+// // var authWindow = new BrowserWindow(
+// // { 
+// //     width: 800, 
+// //     height: 600, 
+// //     show: false, 
+// //     'node-integration': true 
+// // });
 
-authWindow.loadURL(url);
-authWindow.show();
+// // authWindow.loadURL(url);
+// // authWindow.show();
 
-function handleCallback (url) {
-    var raw_code = /code=([^&]*)/.exec(url) || null;
-    var code = (raw_code && raw_code.length > 1) ? raw_code[1] : null;
-    var error = /\?error=(.+)$/.exec(url);
+// function handleCallback (url) {
+//     var raw_code = /code=([^&]*)/.exec(url) || null;
+//     var code = (raw_code && raw_code.length > 1) ? raw_code[1] : null;
+//     var error = /\?error=(.+)$/.exec(url);
   
-    if (code || error) {
-      authWindow.destroy();
-    }
+//     if (code || error) {
+//       authWindow.destroy();
+//     }
 
-    if (code) {
-        const request = require('request');
-        const token_uri = sec.auth_uri;
+//     if (code) {
+//         const request = require('request');
+//         const token_uri = sec.auth_uri;
 
-        request.post(token_uri, { form:
-            {client_id: sec.client_id,
-            client_secret: sec.client_secret,
-            code: code,
-            grant_type: "authorization_code",
-            redirect_uri: 'http://localhost'}
-            },
-            (err, httpResponse, body) => {
-                console.log({err, httpResponse, body});
-                const cred = JSON.parse(body);
-                console.log(cred);
+//         request.post(token_uri, { form:
+//             {client_id: sec.client_id,
+//             client_secret: sec.client_secret,
+//             code: code,
+//             grant_type: "authorization_code",
+//             redirect_uri: 'http://localhost'}
+//             },
+//             (err, httpResponse, body) => {
+//                 console.log({err, httpResponse, body});
+//                 const cred = JSON.parse(body);
+//                 console.log(cred);
 
-                oauth2Client.setCredentials(cred);
+//                 oauth2Client.setCredentials(cred);
 
 
-                const drive = google.drive({version: 'v3', auth: oauth2Client});
-                drive.files.list({
-                    pageSize: 10,
-                    fields: 'nextPageToken, files(id, name)',
-                    }, 
-                    (err, res) => {
-                        if (err) return console.log('The API returned an error: ' + err);
-                        const files = res.data.files;
-                        if (files.length) {
-                        console.log('Files:');
-                        files.map((file) => {
-                            console.log(`${file.name} (${file.id})`);
-                        });
-                        } else {
-                        console.log('No files found.');
-                    }
-                });
-            }
-        );
+//                 const drive = google.drive({version: 'v3', auth: oauth2Client});
+//                 drive.files.list({
+//                     pageSize: 10,
+//                     fields: 'nextPageToken, files(id, name)',
+//                     }, 
+//                     (err, res) => {
+//                         if (err) return console.log('The API returned an error: ' + err);
+//                         const files = res.data.files;
+//                         if (files.length) {
+//                         console.log('Files:');
+//                         files.map((file) => {
+//                             console.log(`${file.name} (${file.id})`);
+//                         });
+//                         } else {
+//                         console.log('No files found.');
+//                     }
+//                 });
+//             }
+//         );
           
-    } else if (error) {
-      alert('Oops! Something went wrong and we couldn\'t' +
-        'log you in using Github. Please try again.');
-    }
-}
+//     } else if (error) {
+//       alert('Oops! Something went wrong and we couldn\'t' +
+//         'log you in using Github. Please try again.');
+//     }
+// }
 
-authWindow.webContents.on('will-navigate', function (event, url) {
-    handleCallback(url);
-});
+// // authWindow.webContents.on('will-navigate', function (event, url) {
+// //     handleCallback(url);
+// // });
   
-authWindow.webContents.on(
-    'did-get-redirect-request', 
-    function (event, oldUrl, newUrl) {
-    handleCallback(newUrl);
-});
+// // authWindow.webContents.on(
+// //     'did-get-redirect-request', 
+// //     function (event, oldUrl, newUrl) {
+// //     handleCallback(newUrl);
+// // });
 
-// Reset the authWindow on close
-authWindow.on(
-    'close', 
-    () => {authWindow = null;},
-    false
-);
+// // // Reset the authWindow on close
+// // authWindow.on(
+// //     'close', 
+// //     () => {authWindow = null;},
+// //     false
+// // );
