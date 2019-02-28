@@ -5,4 +5,4 @@ release-builds
 /TestFiles/*
 npmSetup.bat
 /.vscode/*
-/assets/KEY/client_secret_API.json
+/assets/KEY/client_secret.json

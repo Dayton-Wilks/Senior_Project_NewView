@@ -8,15 +8,27 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height: 600 })
+  mainWindow = new BrowserWindow(
+    {
+      width: 1200, 
+      height: 600,
+      show: false, 
+    }
+  )
   mainWindow.webContents.session.clearCache(function(){}) 
   mainWindow.setMenu(null);
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
-  // Open the DevTools.
-   mainWindow.webContents.openDevTools()
+   mainWindow.on(
+    'ready-to-show', 
+    () => {
+      // Open the DevTools.
+      mainWindow.webContents.openDevTools()
+      mainWindow.show();
+    }
+  )
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -49,8 +61,8 @@ app.on('activate', function () {
   }
 })
 
-ipcMain.on('reply', (event, message) => {
-  mainWindow.webContents.send('reply', message);
+ipcMain.on('drive-file-key', (event, message) => {
+  mainWindow.webContents.send('drive-file-key', message);
 })
 
 // In this file you can include the rest of your app's specific main process

@@ -1,34 +1,67 @@
 const ipc = require('electron').ipcRenderer;
-const  app = require('electron').remote.app;
+const app = require('electron').remote.app;
+const remote = require('electron').remote;
+const request = require('request');
 const path = require('path');
 const {google} = require('googleapis');
+
+const GoogleOauthProvider = require(path.join(app.getAppPath(), 'assets/js/OAuth.js'));
 
 const elementHelpers = require(path.join(app.getAppPath(), 'assets/js/ElementHelpers.js'));
 const createElement = elementHelpers.createElement;
 
 const FileListElementID = 'FileListElement';
 
-ipc.on('message', (event, message) => {
+ipc.on('auth-data', (event, message) => {
     console.log(message);
-    ipc.send('reply', 'Message recieved Main Window!');
+
+    var element = createElement('div');
+    message.data.files.forEach(file => {
+        console.log('in')
+        element.appendChild(
+            CreateFileElement(file)
+        );
+    });
+    document
+        .getElementById(FileListElementID)
+        .innerHTML = element.innerHTML;
+
 });
 
-function AddFiles() {
-    let list = document.getElementById(FileListElementID);
+function CreateFileElement(file) {
+    let element = createElement('div', {
+        'class': 'input-group',
+    });
 
-}
-
-function GenerateFileElement() {
-    let element = document.createElement(
-        'button', 
-        { 
-            'type': 'button',
-            'class': 'btn btn-primary',
-            'onclick': 'SendKey(' + 'val' + ')'
-        }
+    element.appendChild(
+        createElement(
+            'button', 
+            { 
+                'type': 'button',
+                'class': 'btn btn-primary',
+                'onclick': "SendKey('" + file.id + "','" + file.name + "')"
+            },
+            'Select'
+        )
     );
+    
+    element.appendChild(
+        createElement(
+            'div',
+            {
+                'class': 'form-control',
+                'overflow':'hidden',
+                'white-space':'nowrap',
+                'text-overflow':'ellipsis',
+            },
+            'Name: ' + file.name
+        ),
+    );
+    return element;
 }
 
-function SendKey() {
-   // ((mimeType = 'video/mp4') or (mimeType = 'video/mpeg')) and trashed = false
+function SendKey(id, name) {
+    ipc.send('drive-file-key', {id:id,name:name});
+    remote.getCurrentWindow().close();
 }
+

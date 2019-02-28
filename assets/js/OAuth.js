@@ -22,10 +22,11 @@ function optTest(val, err = null) {
 }
 
 module.exports = class GoogleOauthProvider {
-    constructor(opt) {
+    constructor(opt = {}) {
         this.keyFile = optTest(opt.keyFile);
         this.keyFileData = optTest(opt.keyFileData)
         this.oauth2Client = null;
+        this.oauthAqcuired = false;
         this.scopes = optTest(opt.scopes);
         this.authWindow = null;
         this.windowWidth = optTest(opt.windowWidth, 800);
@@ -33,6 +34,17 @@ module.exports = class GoogleOauthProvider {
 
         if (this.keyFile && !this.keyFileData) 
             this.LoadKeyFileJson(this.keyFile);
+    }
+
+    setKeyFileData(data, token) {
+        this.keyFileData = data.keyFileData;
+        this.scopes = data.scopes;
+        this.oauth2Client = new google.auth.OAuth2(
+            this.keyFileData.client_id,
+            this.keyFileData.client_secret,
+            this.keyFileData.redirect_uris[1]
+        );
+        this.oauth2Client.setCredentials(token);
     }
 
     ReloadKeyFile() {
@@ -44,7 +56,6 @@ module.exports = class GoogleOauthProvider {
         fs.readFile(
             path.join(app.getAppPath(), str), 
             (err, data) => {
-            console.log('IN');
             if (err) {
                 console.log(err);
                 return;
@@ -108,6 +119,7 @@ module.exports = class GoogleOauthProvider {
                     //console.log(cred);
     
                     this.oauth2Client.setCredentials(cred);
+                    this.oauthAqcuired = true;
                 }
             );
               

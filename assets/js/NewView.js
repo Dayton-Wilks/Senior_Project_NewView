@@ -9,6 +9,7 @@ const ffmpeg_static = require('ffmpeg-static');
 const fluent_ffmpeg = require('fluent-ffmpeg');
 const { google } = require('googleapis');
 const app = require('electron').remote.app;
+const fs = require('fs');
 
 const GoogleOauthProvider = require(path.join(app.getAppPath(), 'assets/js/OAuth.js'));
 const DriveFileSelectFunction = require(path.join(app.getAppPath(), 'assets/js/DriveFileSelectFunction.js'));
@@ -16,26 +17,32 @@ const elementHelpers = require(path.join(app.getAppPath(), 'assets/js/ElementHel
 // const setAttributes = elementHelpers.setAttributes;
 const createElement = elementHelpers.createElement;
 
-const OAuth = new GoogleOauthProvider({ 
-    keyFile:"assets\\KEY\\client_secret.json",
-    scopes: ['https://www.googleapis.com/auth/drive.metadata.readonly'] 
-});
-
-ipcRenderer.on('reply', (event, message) => {
-    console.log(message);
-})
-
-//********************************************************
-// Initilization
-fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
-
 const pageID = {
     Create_SourceField : 'newInputBox',
     Create_DestinationField : 'newOutputBox',
     Create_OperationField : 'newOperationBox',
     Tasks_CurrentField : 'currentTaskContainer',
     Tasks_CompletedField : 'resultContainer',
+    GoogleIDContainer : 'GoogleID'
 }; Object.freeze(pageID);
+
+const OAuth = new GoogleOauthProvider({ 
+    keyFile:"assets\\KEY\\client_secret.json",
+    scopes: ['https://www.googleapis.com/auth/drive','https://www.googleapis.com/auth/drive.metadata'] 
+});
+
+ipcRenderer.on('drive-file-key', (event, message) => {
+    // let GoogleElement = document.getElementById(pageID.GoogleID);
+
+    // GoogleElement.innerText = message;
+    console.log(message);
+    SetFileDriveData(message.id, message.name);
+})
+
+//********************************************************
+// Initilization
+fluent_ffmpeg.setFfmpegPath(ffmpeg_static.path);
+
 
 //********************************************************
 // Globals
@@ -245,14 +252,32 @@ function GetLocalFile(elementName) {
     let filePath = dialog.showOpenDialog({properties: ["openFile"]});
     if (filePath == undefined) return;
 
+    document.getElementById(pageID.GoogleID).innerText = "";
+
     CreateTask_SetInput_Helper(elementName, filePath[0]);
 }
 
 function SaveLocalFile(ID) {
-    let filePath = dialog.showSaveDialog();
+    let filePath = dialog.showSaveDialog({ properties: ['openFile'] });
     if (filePath == undefined) return;
 
     CreateTask_SetInput_Helper(ID, filePath);
+}
+
+function GetDriveFileID() {
+    //console.log(OAuth.oauth2Client);
+    if (OAuth.oauthAqcuired == false) return OAuth.CreateLoginWindow();
+    DriveFileSelectFunction(OAuth.oauth2Client);
+}
+
+function SetFileDriveData(id, name) {
+    let filepath = dialog.showSaveDialog({ properties: ['openFile'] })
+    let GoogleElement = document.getElementById(pageID.GoogleIDContainer);
+
+    filepath += path.extname(name);
+
+    GoogleElement.innerText = id;
+    CreateTask_SetInput_Helper(pageID.Create_SourceField, filepath);
 }
 
 //********************************************************
@@ -269,49 +294,125 @@ function msToMinSec(time) {
 
 //********************************************************
 // Button Functions
-function ConvertVideo(source, destination, format) {
+function ConvertVideo(source, destination, format, googleID) {
     let aTask = new Task();
     aTask.Source = source;
     aTask.Destination = destination;
     aTask.Operation = format;
+    aTask.GoogleID = googleID;
+
     aTask.FFmpeg_Instance
-        .input(source)
-        .toFormat(format)
-        .on('start', () => {
-            console.log('Starting Task ' + aTask.ID);
-            aTask.State = StateType.Working;
-            aTask.StartTime = new Date();
-            CurrentTaskArray.push(aTask);
-        })
-        .on('end', (stdout, stderr) => {
-            console.log('Ending Task ' + aTask.ID);
-            aTask.State = StateType.Complete;
-            aTask.EndTime = new Date();
-            const index = CurrentTaskArray.lastIndexOf(aTask);
-            CurrentTaskArray.splice(index, 1);
-            CompleteTaskArray.unshift(aTask);
-        })
-        .on('error', (err) => {
-            console.log('ffmpeg encountered an error:');
-            console.log(err);
-            aTask.State = StateType.Error;
-            aTask.EndTime = new Date();
-            const index = CurrentTaskArray.lastIndexOf(aTask);
-            CurrentTaskArray.splice(index, 1);
-            CompleteTaskArray.unshift(aTask);
-        })
-        .save(destination);
+    .input(source)
+    .toFormat(format)
+    .on('start', () => {
+        console.log('Starting Task ' + aTask.ID);
+        aTask.State = StateType.Working;
+        aTask.StartTime = new Date();
+        CurrentTaskArray.push(aTask);
+    })
+    .on('end', (stdout, stderr) => {
+        console.log('Ending Task ' + aTask.ID);
+        aTask.State = StateType.Complete;
+        aTask.EndTime = new Date();
+        const index = CurrentTaskArray.lastIndexOf(aTask);
+        CurrentTaskArray.splice(index, 1);
+        CompleteTaskArray.unshift(aTask);
+    })
+    .on('error', (err) => {
+        console.log('ffmpeg encountered an error:');
+        console.log(err);
+        aTask.State = StateType.Error;
+        aTask.EndTime = new Date();
+        const index = CurrentTaskArray.lastIndexOf(aTask);
+        CurrentTaskArray.splice(index, 1);
+        CompleteTaskArray.unshift(aTask);
+    })
+
+    if (googleID == '') aTask.FFmpeg_Instance.save(destination);
+    else {
+        DownloadDriveFile(aTask, (task) => {
+            task.FFmpeg_Instance.save(aTask.Destination);
+        } );
+    }
+
+    // aTask.FFmpeg_Instance
+    //     .input(source)
+    //     .toFormat(format)
+    //     .on('start', () => {
+    //         console.log('Starting Task ' + aTask.ID);
+    //         aTask.State = StateType.Working;
+    //         aTask.StartTime = new Date();
+    //         CurrentTaskArray.push(aTask);
+    //     })
+    //     .on('end', (stdout, stderr) => {
+    //         console.log('Ending Task ' + aTask.ID);
+    //         aTask.State = StateType.Complete;
+    //         aTask.EndTime = new Date();
+    //         const index = CurrentTaskArray.lastIndexOf(aTask);
+    //         CurrentTaskArray.splice(index, 1);
+    //         CompleteTaskArray.unshift(aTask);
+    //     })
+    //     .on('error', (err) => {
+    //         console.log('ffmpeg encountered an error:');
+    //         console.log(err);
+    //         aTask.State = StateType.Error;
+    //         aTask.EndTime = new Date();
+    //         const index = CurrentTaskArray.lastIndexOf(aTask);
+    //         CurrentTaskArray.splice(index, 1);
+    //         CompleteTaskArray.unshift(aTask);
+    //     })
+    //     .save(destination);
+}
+
+function DownloadDriveFile(taskInstance, callback) {
+    let dest = fs.createWriteStream(taskInstance.Source);
+    let drive = google.drive({version:'v3', auth:OAuth.oauth2Client});
+
+    console.log(taskInstance);
+
+    drive.files.get(
+        {
+            fileId: taskInstance.GoogleID,
+            alt: 'media'
+        },
+        {
+            responseType:"stream"
+        },
+        (err, res) => {
+            console.log('Download Start');
+            res.data
+                .on('end', () => {
+                    console.log('Download Done');
+                    callback(taskInstance);
+                })
+                .on('error', err => {
+                    console.log('Error Downloading - ' + err);
+                })
+                .pipe(dest);
+        }
+    );
+    // .on('end', () => {
+    //     callback(taskInstance);
+    // })
+    // .on('error', (err) => {
+    //     console.log('Error during download - ' + err);
+    // })
+    // .pipe(dest);
 }
 
 function ConvertVideoButton() {
     let input = document.getElementById(pageID.Create_SourceField).title;
     let operation = document.getElementById(pageID.Create_OperationField).value;
     let output = document.getElementById(pageID.Create_DestinationField).title;
+    
+    let GoogleElement = document.getElementById(pageID.GoogleIDContainer);
+    let googleID = GoogleElement.innerText;
+    GoogleElement.innerText = "";
 
     output += '.' + operation;
 
     path.extname(input)
     if (path.extname(input) != operation)
-        ConvertVideo(input, output, operation);
+        ConvertVideo(input, output, operation, googleID);
 }
 

@@ -39,8 +39,10 @@
         <div class="tab-pane fade show active" id="videoForm" role="tabpanel" aria-labelledby="home-tab">
             <form class="card-body">
               <h3>Video</h3>
+              <div id="GoogleID" hidden></div>
               <div class="input-group">
-                  <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Find File</button>
+                  <button type="button" class="btn btn-primary" onclick="GetDriveFileID()">Drive</button>
+                  <button type="button" class="btn btn-primary" onclick="GetLocalFile('newInputBox')">Local</button>
                   <input type="text" class="form-control" id="newInputBox" placeholder="Browse" title="File" readonly>
               </div>
               <div class="form-group">
