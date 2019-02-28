@@ -1,6 +1,7 @@
 //********************************************************
 // Includes
 const { dialog } = require('electron').remote;
+const { ipcRenderer } = require('electron');
 const { shell } = require('electron');
 const array = require('array');
 const path = require('path');
@@ -10,12 +11,19 @@ const { google } = require('googleapis');
 const app = require('electron').remote.app;
 
 const GoogleOauthProvider = require(path.join(app.getAppPath(), 'assets/js/OAuth.js'));
+const DriveFileSelectFunction = require(path.join(app.getAppPath(), 'assets/js/DriveFileSelectFunction.js'));
+const elementHelpers = require(path.join(app.getAppPath(), 'assets/js/ElementHelpers.js'));
+// const setAttributes = elementHelpers.setAttributes;
+const createElement = elementHelpers.createElement;
 
 const OAuth = new GoogleOauthProvider({ 
     keyFile:"assets\\KEY\\client_secret.json",
     scopes: ['https://www.googleapis.com/auth/drive.metadata.readonly'] 
 });
 
+ipcRenderer.on('reply', (event, message) => {
+    console.log(message);
+})
 
 //********************************************************
 // Initilization
@@ -38,21 +46,6 @@ const StateType = { // State of a task
     Complete:3,
     Error:4
 }; Object.freeze(StateType);
-
-//********************************************************
-// Element Helpers
-function setAttributes(el, attr) {
-    for (var key in attr) {
-        el.setAttribute(key, attr[key]);
-    }
-}
-
-function createElement(elType, attr, innerText) {
-    let e = document.createElement(elType);
-    if (attr != undefined) setAttributes(e, attr);
-    if (innerText != undefined) e.innerText = innerText;
-    return e;
-}
 
 //********************************************************
 // Task Class

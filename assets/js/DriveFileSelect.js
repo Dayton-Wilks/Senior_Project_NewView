@@ -1,34 +1,34 @@
-const { BrowserWindow } = require('electron').remote; 
+const ipc = require('electron').ipcRenderer;
 const  app = require('electron').remote.app;
 const path = require('path');
 const {google} = require('googleapis');
 
-function DisplayDriveFileSelect(OAuthClient, callback) {
-    let htmlPath = path.join(app.getAppPath(), '\\assets\\HTML\\DriveFileSelect.html');
+const elementHelpers = require(path.join(app.getAppPath(), 'assets/js/ElementHelpers.js'));
+const createElement = elementHelpers.createElement;
 
-    let driveWindow = new BrowserWindow({
-        width: 800, 
-        height: 600, 
-        show: false, 
-        'node-integration': true
-    });
+const FileListElementID = 'FileListElement';
 
-    driveWindow.on(
-        'ready-to-show',
-        () => {
-            driveWindow.show();
-        }
-    );
+ipc.on('message', (event, message) => {
+    console.log(message);
+    ipc.send('reply', 'Message recieved Main Window!');
+});
 
-    driveWindow.on(
-        'close',
-        () => {
-            driveWindow = null;
-        }
-    );
-
-    driveWindow.loadFile(htmlPath);
+function AddFiles() {
+    let list = document.getElementById(FileListElementID);
 
 }
 
-module.exports = DisplayDriveFileSelect;
+function GenerateFileElement() {
+    let element = document.createElement(
+        'button', 
+        { 
+            'type': 'button',
+            'class': 'btn btn-primary',
+            'onclick': 'SendKey(' + 'val' + ')'
+        }
+    );
+}
+
+function SendKey() {
+   // ((mimeType = 'video/mp4') or (mimeType = 'video/mpeg')) and trashed = false
+}
