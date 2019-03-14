@@ -23,7 +23,8 @@ const pageID = {
     Create_OperationField : 'newOperationBox',
     Tasks_CurrentField : 'currentTaskContainer',
     Tasks_CompletedField : 'resultContainer',
-    GoogleIDContainer : 'GoogleID'
+    GoogleIDContainer : 'GoogleID',
+    GoogleUploadCheck : 'uploadCheck'
 }; Object.freeze(pageID);
 
 const OAuth = new GoogleOauthProvider({ 
@@ -66,7 +67,8 @@ class Task {
         this.FFmpeg_Instance = fluent_ffmpeg();
         this.Thread_Instance = null;
         this.ID = taskCounter++; 
-        this.State = StateType.Pending; 
+        this.State = StateType.Pending;
+        this.GoogleID = null; 
         // x instanceof Task
     }
     
@@ -316,14 +318,16 @@ function msToMinSec(time) {
     return result;
 }
 
+var testTask = null;
 //********************************************************
 // Button Functions
-function ConvertVideo(source, destination, format, googleID) {
+function ConvertVideo(source, destination, format, googleID, upload) {
     let aTask = new Task();
     aTask.Source = source;
     aTask.Destination = destination;
     aTask.Operation = format;
     aTask.GoogleID = googleID;
+    aTask.DriveUpload = upload;
 
     aTask.FFmpeg_Instance
     .input(source)
@@ -341,6 +345,9 @@ function ConvertVideo(source, destination, format, googleID) {
         const index = CurrentTaskArray.lastIndexOf(aTask);
         CurrentTaskArray.splice(index, 1);
         CompleteTaskArray.unshift(aTask);
+        if (upload == true) {
+            DriveFileUpload(aTask);
+        }
     })
     .on('error', (err) => {
         console.log('ffmpeg encountered an error:');
@@ -430,6 +437,7 @@ function ConvertVideoButton() {
     let output = document.getElementById(pageID.Create_DestinationField).title;
     
     let GoogleElement = document.getElementById(pageID.GoogleIDContainer);
+    let uploadCheck = document.getElementById(pageID.GoogleUploadCheck).checked;
     let googleID = GoogleElement.innerText;
     GoogleElement.innerText = "";
 
@@ -437,6 +445,29 @@ function ConvertVideoButton() {
 
     path.extname(input)
     if (path.extname(input) != operation)
-        ConvertVideo(input, output, operation, googleID);
+        ConvertVideo(input, output, operation, googleID, uploadCheck);
+}
+
+async function DriveFileUpload(aTask) {
+    const drive = google.drive({
+        version: 'v3',
+        auth: OAuth.oauth2Client
+    });
+    try {
+    const res = await drive.files.create({
+        requestBody: {
+          name: path.basename(aTask.Destination),
+          //mimeType: 'image/png'
+        },
+        media: {
+          //mimeType: 'image/png',
+          body: fs.createReadStream(aTask.Destination)
+        }
+      });
+      console.log("File uploaded!");
+      console.log(res.data);
+    } catch (err) {
+        console.log("Not Logged In!");
+    }
 }
 
