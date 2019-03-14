@@ -35,6 +35,16 @@ function CreateFileElement(file) {
 
     element.appendChild(
         createElement(
+            'img',
+            {
+                'src' : file.thumbnailLink,
+                'alt' : 'image_' + file.id
+            }
+        )
+    );
+
+    element.appendChild(
+        createElement(
             'button', 
             { 
                 'type': 'button',

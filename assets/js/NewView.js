@@ -86,21 +86,43 @@ class Task {
     //********************************************************
     // Create Element Methods
     _CreateCurrentElement() {
-        let element = document.createElement('div');
-        console.log(element.tagName);
+        let element = document.createElement('div', {'class':'card border-secondary'});
+        //console.log(element.tagName);
 
         // Create Header
         let t = createElement('div', {'class':'card-header'}, 'Task ' + this.ID);
         element.appendChild(t);
+        element.appendChild(
+            createElement(
+                'button',
+                {
+                    'type' : 'button',
+                    'class' : 'btn btn-info',
+                    'data-toggle' : 'collapse',
+                    'data-target' : '#body' + this.ID
+                },
+                'Collapse'
+            )
+        );
 
         // Source Section
-        element.appendChild(this._CreateSmallElement_Helper('Source: ', this.Source));
+        t = createElement(
+            'div',
+            {
+                'id' : 'body' + this.ID,
+                'class' : 'collapse'
+            }
+        );
+
+        t.appendChild(this._CreateSmallElement_Helper('Source: ', this.Source));
 
         // Destination Section
-        element.appendChild(this._CreateSmallElement_Helper('Destination: ', this.Destination));
+        t.appendChild(this._CreateSmallElement_Helper('Destination: ', this.Destination));
 
         // Operation Type Section
-        element.appendChild(this._CreateSmallElement_Helper('Operation: ', this.Operation));
+        t.appendChild(this._CreateSmallElement_Helper('Operation: ', this.Operation));
+
+        element.appendChild(t);
 
         // Cancel Button
         element.appendChild(this._CreateCancelButton_Helper());
@@ -136,6 +158,7 @@ class Task {
     //********************************************************
     // Cancel ffmpeg Proc Method
     _Cancel() {
+        console.log(this);
         if (this.State == StateType.Working && this.FFmpeg_Instance != null) {
             this.FFmpeg_Instance.kill();
             return true;
@@ -194,10 +217,11 @@ class Task {
 } 
 
 function CancelTask(ID) { // Task.CancelTask(ID)
-    let index = CurrentTaskArray.find(aTask);
-    if (index >= 0) {
-        if (CurrentTaskArray[index]._Cancel()) console.log('Cancelled Task ' + this.ID);
-        else console.log('Unable To Cancel Task ' + this.ID);
+    let index = CurrentTaskArray.find((aTask) => { return aTask.ID == ID; });
+    console.log({ID, index});
+    if (index != null && index != undefined) {
+        if (index._Cancel()) console.log('Cancelled Task ' + index.ID);
+        else console.log('Unable To Cancel Task ' + ID);
     }
 }
 
@@ -252,7 +276,7 @@ function GetLocalFile(elementName) {
     let filePath = dialog.showOpenDialog({properties: ["openFile"]});
     if (filePath == undefined) return;
 
-    document.getElementById(pageID.GoogleID).innerText = "";
+    document.getElementById(pageID.GoogleIDContainer).innerText = "";
 
     CreateTask_SetInput_Helper(elementName, filePath[0]);
 }

@@ -13,7 +13,7 @@ function DisplayDriveFileSelect(oauth2Client, callback) {
         {
             pageSize: 150,
             q: "fileExtension = 'mp4' or fileExtension = 'avi' and trashed = false",
-            fields: 'files(name, fileExtension, id, modifiedTime, trashed)',
+            fields: 'files(name, fileExtension, id, modifiedTime, trashed, thumbnailLink)',
             spaces: 'drive'
         },
         (err, res) => {
@@ -23,7 +23,7 @@ function DisplayDriveFileSelect(oauth2Client, callback) {
             }   
             
             let driveWindow = new BrowserWindow({
-                width: 800, 
+                width: 1000, 
                 height: 600, 
                 show: false,
                 parent: mainWindow,
